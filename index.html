@@ -439,7 +439,7 @@
         <header>
           <div class="brand">
             <div class="brand-icon" aria-hidden="true">$</div>
-            <h1>Bill Splitter</h1>
+            <h1 id="appTitle">Bill Splitter</h1>
           </div>
           <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle color theme">
             <span id="themeIcon" aria-hidden="true">🌙</span>
@@ -449,11 +449,11 @@
 
         <main class="calculator-card">
           <!-- Inputs Column -->
-          <section class="inputs-section" aria-label="Bill details">
+          <section class="inputs-section" id="inputsSection" aria-label="Bill details">
             <!-- Bill Total -->
             <div class="field-group">
               <div class="field-header">
-                <label for="billInput">Bill Total</label>
+                <label for="billInput" id="billLabel">Bill Total</label>
                 <span class="error-msg" id="billError" aria-live="polite"></span>
               </div>
               <div class="input-wrapper has-prefix">
@@ -502,7 +502,7 @@
             <!-- Number of People -->
             <div class="field-group">
               <div class="field-header">
-                <label for="peopleInput">Number of People</label>
+                <label for="peopleInput" id="peopleLabel">Number of People</label>
                 <span class="error-msg" id="peopleError" aria-live="polite"></span>
               </div>
               <div class="people-control">
@@ -523,11 +523,11 @@
           </section>
 
           <!-- Results Column -->
-          <section class="results-panel" aria-label="Calculation results" aria-live="polite">
+          <section class="results-panel" id="resultsSection" aria-label="Calculation results" aria-live="polite">
             <div class="results-list">
               <div class="result-row">
                 <div class="result-meta">
-                  <span class="result-title">Tip Amount</span>
+                  <span class="result-title" id="tipAmountTitle">Tip Amount</span>
                   <span class="result-subtitle" id="tipSubtext">15% of bill</span>
                 </div>
                 <span class="result-value" id="tipAmountDisplay">$7.50</span>
@@ -535,15 +535,15 @@
 
               <div class="result-row">
                 <div class="result-meta">
-                  <span class="result-title">Total Bill</span>
-                  <span class="result-subtitle">Bill + tip</span>
+                  <span class="result-title" id="totalBillTitle">Total Bill</span>
+                  <span class="result-subtitle" id="totalBillSubtext">Bill + tip</span>
                 </div>
                 <span class="result-value" id="totalAmountDisplay">$57.50</span>
               </div>
 
               <div class="result-row highlight">
                 <div class="result-meta">
-                  <span class="result-title">Amount per Person</span>
+                  <span class="result-title" id="perPersonTitle">Amount per Person</span>
                   <span class="result-subtitle" id="splitSubtext">Split between 2 people</span>
                 </div>
                 <span class="result-value" id="perPersonDisplay">$28.75</span>
@@ -562,6 +562,385 @@
 
       <script>
         (function () {
+          const translations = {
+            en: {
+              pageTitle: 'Tip & Bill Splitter',
+              appTitle: 'Bill Splitter',
+              themeDark: 'Dark',
+              themeLight: 'Light',
+              toggleThemeAria: 'Toggle color theme',
+              billDetailsAria: 'Bill details',
+              resultsAria: 'Calculation results',
+              billLabel: 'Bill Total',
+              tipGroupLabel: 'Select Tip %',
+              customTipPlaceholder: 'Custom tip %',
+              customTipAria: 'Custom tip percentage',
+              peopleLabel: 'Number of People',
+              decreasePeopleAria: 'Decrease number of people',
+              increasePeopleAria: 'Increase number of people',
+              tipAmountTitle: 'Tip Amount',
+              tipSubtext: (pct) => `${pct}% of bill`,
+              totalBillTitle: 'Total Bill',
+              totalBillSubtext: 'Bill + tip',
+              perPersonTitle: 'Amount per Person',
+              splitOne: 'For 1 person',
+              splitMany: (n) => `Split between ${n} people`,
+              statusBanner: 'Please fix the highlighted fields above to calculate totals.',
+              resetBtn: 'Reset',
+              errBillEmpty: 'Enter a bill amount',
+              errNegative: 'Cannot be negative',
+              errTipEmpty: 'Enter a tip % or pick a preset',
+              errPeopleEmpty: 'Enter number of people',
+              errPeopleMin: 'Must be at least 1',
+              errPeopleInt: 'Must be a whole number'
+            },
+            es: {
+              pageTitle: 'Calculadora de Propinas y Cuenta',
+              appTitle: 'Dividir Cuenta',
+              themeDark: 'Oscuro',
+              themeLight: 'Claro',
+              toggleThemeAria: 'Cambiar tema de color',
+              billDetailsAria: 'Detalles de la cuenta',
+              resultsAria: 'Resultados del cálculo',
+              billLabel: 'Total de la cuenta',
+              tipGroupLabel: 'Seleccionar propina %',
+              customTipPlaceholder: 'Propina personalizada %',
+              customTipAria: 'Porcentaje de propina personalizada',
+              peopleLabel: 'Número de personas',
+              decreasePeopleAria: 'Disminuir número de personas',
+              increasePeopleAria: 'Aumentar número de personas',
+              tipAmountTitle: 'Propina',
+              tipSubtext: (pct) => `${pct}% de la cuenta`,
+              totalBillTitle: 'Total a pagar',
+              totalBillSubtext: 'Cuenta + propina',
+              perPersonTitle: 'Total por persona',
+              splitOne: 'Para 1 persona',
+              splitMany: (n) => `Dividido entre ${n} personas`,
+              statusBanner: 'Corrige los campos resaltados para calcular el total.',
+              resetBtn: 'Reiniciar',
+              errBillEmpty: 'Ingresa el monto de la cuenta',
+              errNegative: 'No puede ser negativo',
+              errTipEmpty: 'Ingresa un % o elige una opción',
+              errPeopleEmpty: 'Ingresa el número de personas',
+              errPeopleMin: 'Debe ser al menos 1',
+              errPeopleInt: 'Debe ser un número entero'
+            },
+            fr: {
+              pageTitle: 'Calculateur de Pourboire et Addition',
+              appTitle: 'Partage d’Addition',
+              themeDark: 'Sombre',
+              themeLight: 'Clair',
+              toggleThemeAria: 'Changer le thème de couleur',
+              billDetailsAria: 'Détails de l’addition',
+              resultsAria: 'Résultats du calcul',
+              billLabel: 'Montant de l’addition',
+              tipGroupLabel: 'Choisir le pourboire %',
+              customTipPlaceholder: 'Pourboire personnalisé %',
+              customTipAria: 'Pourcentage de pourboire personnalisé',
+              peopleLabel: 'Nombre de personnes',
+              decreasePeopleAria: 'Diminuer le nombre de personnes',
+              increasePeopleAria: 'Augmenter le nombre de personnes',
+              tipAmountTitle: 'Montant du pourboire',
+              tipSubtext: (pct) => `${pct}% de l’addition`,
+              totalBillTitle: 'Total',
+              totalBillSubtext: 'Addition + pourboire',
+              perPersonTitle: 'Montant par personne',
+              splitOne: 'Pour 1 personne',
+              splitMany: (n) => `Partagé entre ${n} personnes`,
+              statusBanner: 'Veuillez corriger les champs en surbrillance pour calculer le total.',
+              resetBtn: 'Réinitialiser',
+              errBillEmpty: 'Entrez le montant de l’addition',
+              errNegative: 'Ne peut pas être négatif',
+              errTipEmpty: 'Entrez un % ou choisissez une option',
+              errPeopleEmpty: 'Entrez le nombre de personnes',
+              errPeopleMin: 'Doit être au moins 1',
+              errPeopleInt: 'Doit être un nombre entier'
+            },
+            de: {
+              pageTitle: 'Trinkgeld- & Rechnungsrechner',
+              appTitle: 'Rechnung teilen',
+              themeDark: 'Dunkel',
+              themeLight: 'Hell',
+              toggleThemeAria: 'Farbschema wechseln',
+              billDetailsAria: 'Rechnungsdetails',
+              resultsAria: 'Berechnungsergebnisse',
+              billLabel: 'Rechnungsbetrag',
+              tipGroupLabel: 'Trinkgeld % wählen',
+              customTipPlaceholder: 'Eigenes Trinkgeld %',
+              customTipAria: ' Eigener Trinkgeldprozentsatz',
+              peopleLabel: 'Anzahl der Personen',
+              decreasePeopleAria: 'Personenanzahl verringern',
+              increasePeopleAria: 'Personenanzahl erhöhen',
+              tipAmountTitle: 'Trinkgeldbetrag',
+              tipSubtext: (pct) => `${pct}% der Rechnung`,
+              totalBillTitle: 'Gesamtbetrag',
+              totalBillSubtext: 'Rechnung + Trinkgeld',
+              perPersonTitle: 'Betrag pro Person',
+              splitOne: 'Für 1 Person',
+              splitMany: (n) => `Aufgeteilt auf ${n} Personen`,
+              statusBanner: 'Bitte korrigieren Sie die markierten Felder.',
+              resetBtn: 'Zurücksetzen',
+              errBillEmpty: 'Rechnungsbetrag eingeben',
+              errNegative: 'Darf nicht negativ sein',
+              errTipEmpty: 'Trinkgeld % eingeben oder wählen',
+              errPeopleEmpty: 'Personenanzahl eingeben',
+              errPeopleMin: 'Mindestens 1 Person',
+              errPeopleInt: 'Muss eine ganze Zahl sein'
+            },
+            pt: {
+              pageTitle: 'Calculadora de Gorjeta e Conta',
+              appTitle: 'Dividir Conta',
+              themeDark: 'Escuro',
+              themeLight: 'Claro',
+              toggleThemeAria: 'Alternar tema de cores',
+              billDetailsAria: 'Detalhes da conta',
+              resultsAria: 'Resultados do cálculo',
+              billLabel: 'Total da Conta',
+              tipGroupLabel: 'Selecionar Gorjeta %',
+              customTipPlaceholder: 'Gorjeta personalizada %',
+              customTipAria: 'Porcentagem de gorjeta personalizada',
+              peopleLabel: 'Número de Pessoas',
+              decreasePeopleAria: 'Diminuir número de pessoas',
+              increasePeopleAria: 'Aumentar número de pessoas',
+              tipAmountTitle: 'Valor da Gorjeta',
+              tipSubtext: (pct) => `${pct}% da conta`,
+              totalBillTitle: 'Total da Conta',
+              totalBillSubtext: 'Conta + gorjeta',
+              perPersonTitle: 'Valor por Pessoa',
+              splitOne: 'Para 1 pessoa',
+              splitMany: (n) => `Dividido entre ${n} pessoas`,
+              statusBanner: 'Corrija os campos destacados acima para calcular.',
+              resetBtn: 'Redefinir',
+              errBillEmpty: 'Digite o valor da conta',
+              errNegative: 'Não pode ser negativo',
+              errTipEmpty: 'Digite a % ou escolha uma opção',
+              errPeopleEmpty: 'Digite o número de pessoas',
+              errPeopleMin: 'Deve ser pelo menos 1',
+              errPeopleInt: 'Deve ser um número inteiro'
+            },
+            it: {
+              pageTitle: 'Calcolatore Mancia e Conto',
+              appTitle: 'Dividi Conto',
+              themeDark: 'Scuro',
+              themeLight: 'Chiaro',
+              toggleThemeAria: 'Cambia tema colore',
+              billDetailsAria: 'Dettagli del conto',
+              resultsAria: 'Risultati del calcolo',
+              billLabel: 'Totale Conto',
+              tipGroupLabel: 'Seleziona Mancia %',
+              customTipPlaceholder: 'Mancia personalizzata %',
+              customTipAria: 'Percentuale mancia personalizzata',
+              peopleLabel: 'Numero di Persone',
+              decreasePeopleAria: 'Diminuisci numero di persone',
+              increasePeopleAria: 'Aumenta numero di persone',
+              tipAmountTitle: 'Importo Mancia',
+              tipSubtext: (pct) => `${pct}% del conto`,
+              totalBillTitle: 'Totale Complessivo',
+              totalBillSubtext: 'Conto + mancia',
+              perPersonTitle: 'Importo a Persona',
+              splitOne: 'Per 1 persona',
+              splitMany: (n) => `Diviso tra ${n} persone`,
+              statusBanner: 'Correggi i campi evidenziati per calcolare il totale.',
+              resetBtn: 'Reimposta',
+              errBillEmpty: 'Inserisci l’importo del conto',
+              errNegative: 'Non può essere negativo',
+              errTipEmpty: 'Inserisci % o scegli un’opzione',
+              errPeopleEmpty: 'Inserisci il numero di persone',
+              errPeopleMin: 'Deve essere almeno 1',
+              errPeopleInt: 'Deve essere un numero intero'
+            },
+            ja: {
+              pageTitle: 'チップ＆割り勘計算機',
+              appTitle: '割り勘電卓',
+              themeDark: 'ダーク',
+              themeLight: 'ライト',
+              toggleThemeAria: 'カラーテーマを切り替え',
+              billDetailsAria: 'お会計の詳細',
+              resultsAria: '計算結果',
+              billLabel: 'お会計合計',
+              tipGroupLabel: 'チップ % を選択',
+              customTipPlaceholder: 'カスタム %',
+              customTipAria: 'カスタムチップ率',
+              peopleLabel: '人数',
+              decreasePeopleAria: '人数を減らす',
+              increasePeopleAria: '人数を増やす',
+              tipAmountTitle: 'チップ金額',
+              tipSubtext: (pct) => `お会計の ${pct}%`,
+              totalBillTitle: '支払い総額',
+              totalBillSubtext: 'お会計 + チップ',
+              perPersonTitle: '1人あたりの金額',
+              splitOne: '1人分',
+              splitMany: (n) => `${n}人で割り勘`,
+              statusBanner: '計算するには強調表示された項目を修正してください。',
+              resetBtn: 'リセット',
+              errBillEmpty: '金額を入力してください',
+              errNegative: '負の数は入力できません',
+              errTipEmpty: 'チップ率を入力または選択してください',
+              errPeopleEmpty: '人数を入力してください',
+              errPeopleMin: '1人以上にしてください',
+              errPeopleInt: '整数を入力してください'
+            },
+            zh: {
+              pageTitle: '小费与账单分摊计算器',
+              appTitle: '账单分摊',
+              themeDark: '深色',
+              themeLight: '浅色',
+              toggleThemeAria: '切换颜色主题',
+              billDetailsAria: '账单详情',
+              resultsAria: '计算结果',
+              billLabel: '账单总额',
+              tipGroupLabel: '选择小费 %',
+              customTipPlaceholder: '自定义小费 %',
+              customTipAria: '自定义小费百分比',
+              peopleLabel: '人数',
+              decreasePeopleAria: '减少人数',
+              increasePeopleAria: '增加人数',
+              tipAmountTitle: '小费金额',
+              tipSubtext: (pct) => `账单的 ${pct}%`,
+              totalBillTitle: '总计金额',
+              totalBillSubtext: '账单 + 小费',
+              perPersonTitle: '每人应付',
+              splitOne: '1 人支付',
+              splitMany: (n) => `${n} 人平摊`,
+              statusBanner: '请修正上方高亮显示的字段以计算总额。',
+              resetBtn: '重置',
+              errBillEmpty: '请输入账单金额',
+              errNegative: '不能为负数',
+              errTipEmpty: '请输入小费%或选择预设',
+              errPeopleEmpty: '请输入人数',
+              errPeopleMin: '至少为 1 人',
+              errPeopleInt: '必须为整数'
+            },
+            ko: {
+              pageTitle: '팁 및 더치페이 계산기',
+              appTitle: '더치페이 계산기',
+              themeDark: '다크',
+              themeLight: '라이트',
+              toggleThemeAria: '테마 전환',
+              billDetailsAria: '청구서 상세',
+              resultsAria: '계산 결과',
+              billLabel: '총 청구 금액',
+              tipGroupLabel: '팁 % 선택',
+              customTipPlaceholder: '직접 입력 %',
+              customTipAria: '사용자 지정 팁 비율',
+              peopleLabel: '인원수',
+              decreasePeopleAria: '인원수 줄이기',
+              increasePeopleAria: '인원수 늘리기',
+              tipAmountTitle: '팁 금액',
+              tipSubtext: (pct) => `청구액의 ${pct}%`,
+              totalBillTitle: '총 합계',
+              totalBillSubtext: '청구액 + 팁',
+              perPersonTitle: '1인당 금액',
+              splitOne: '1인 기준',
+              splitMany: (n) => `${n}명이 나누어 결제`,
+              statusBanner: '총액을 계산하려면 표시된 항목을 수정하세요.',
+              resetBtn: '초기화',
+              errBillEmpty: '청구 금액을 입력하세요',
+              errNegative: '음수는 입력할 수 없습니다',
+              errTipEmpty: '팁 %를 입력하거나 선택하세요',
+              errPeopleEmpty: '인원수를 입력하세요',
+              errPeopleMin: '최소 1명 이상이어야 합니다',
+              errPeopleInt: '정수만 입력 가능합니다'
+            },
+            ru: {
+              pageTitle: 'Калькулятор чаевых и счёта',
+              appTitle: 'Разделить счёт',
+              themeDark: 'Тёмная',
+              themeLight: 'Светлая',
+              toggleThemeAria: 'Переключить тему',
+              billDetailsAria: 'Детали счёта',
+              resultsAria: 'Результаты расчёта',
+              billLabel: 'Сумма счёта',
+              tipGroupLabel: 'Выберите чаевые %',
+              customTipPlaceholder: 'Свой % чаевых',
+              customTipAria: 'Свой процент чаевых',
+              peopleLabel: 'Количество человек',
+              decreasePeopleAria: 'Уменьшить количество человек',
+              increasePeopleAria: 'Увеличить количество человек',
+              tipAmountTitle: 'Сумма чаевых',
+              tipSubtext: (pct) => `${pct}% от счёта`,
+              totalBillTitle: 'Итоговый счёт',
+              totalBillSubtext: 'Счёт + чаевые',
+              perPersonTitle: 'С человека',
+              splitOne: 'На 1 человека',
+              splitMany: (n) => `Разделено на ${n} чел.`,
+              statusBanner: 'Пожалуйста, исправьте выделенные поля.',
+              resetBtn: 'Сбросить',
+              errBillEmpty: 'Введите сумму счёта',
+              errNegative: 'Не может быть отрицательным',
+              errTipEmpty: 'Введите % или выберите вариант',
+              errPeopleEmpty: 'Укажите количество человек',
+              errPeopleMin: 'Минимум 1 человек',
+              errPeopleInt: 'Должно быть целым числом'
+            },
+            ar: {
+              pageTitle: 'حاسبة الإكرامية وتقسيم الفاتورة',
+              appTitle: 'تقسيم الفاتورة',
+              themeDark: 'داكن',
+              themeLight: 'فاتح',
+              toggleThemeAria: 'تبديل المظهر',
+              billDetailsAria: 'تفاصيل الفاتورة',
+              resultsAria: 'نتائج الحساب',
+              billLabel: 'إجمالي الفاتورة',
+              tipGroupLabel: 'اختر نسبة الإكرامية %',
+              customTipPlaceholder: 'نسبة مخصصة %',
+              customTipAria: 'نسبة إكرامية مخصصة',
+              peopleLabel: 'عدد الأشخاص',
+              decreasePeopleAria: 'تقليل عدد الأشخاص',
+              increasePeopleAria: 'زيادة عدد الأشخاص',
+              tipAmountTitle: 'مبلغ الإكرامية',
+              tipSubtext: (pct) => `${pct}% من الفاتورة`,
+              totalBillTitle: 'الإجمالي الكلي',
+              totalBillSubtext: 'الفاتورة + الإكرامية',
+              perPersonTitle: 'المبلغ لكل شخص',
+              splitOne: 'لشخص واحد',
+              splitMany: (n) => `مقسمة بين ${n} أشخاص`,
+              statusBanner: 'يرجى تصحيح الحقول المحددة أعلاه لحساب الإجمالي.',
+              resetBtn: 'إعادة ضبط',
+              errBillEmpty: 'أدخل مبلغ الفاتورة',
+              errNegative: 'لا يمكن أن يكون سالباً',
+              errTipEmpty: 'أدخل نسبة أو اختر من القائمة',
+              errPeopleEmpty: 'أدخل عدد الأشخاص',
+              errPeopleMin: 'يجب أن يكون 1 على الأقل',
+              errPeopleInt: 'يجب أن يكون رقماً صحيحاً'
+            }
+          };
+
+          function detectDeviceLocale() {
+            const candidates = Array.isArray(navigator.languages) && navigator.languages.length
+              ? navigator.languages
+              : [navigator.language || 'en-US'];
+
+            for (const tag of candidates) {
+              if (!tag) continue;
+              const base = tag.split('-')[0].toLowerCase();
+              if (translations[base]) {
+                return { locale: tag, langKey: base };
+              }
+            }
+            return { locale: candidates[0] || 'en-US', langKey: 'en' };
+          }
+
+          const { locale: userLocale, langKey } = detectDeviceLocale();
+          const t = translations[langKey] || translations.en;
+
+          // Update document language and direction
+          document.documentElement.lang = userLocale;
+          document.documentElement.dir = langKey === 'ar' ? 'rtl' : 'ltr';
+          document.title = t.pageTitle;
+
+          // Elements
+          const appTitle = document.getElementById('appTitle');
+          const inputsSection = document.getElementById('inputsSection');
+          const resultsSection = document.getElementById('resultsSection');
+          const billLabel = document.getElementById('billLabel');
+          const tipGroupLabel = document.getElementById('tipGroupLabel');
+          const peopleLabel = document.getElementById('peopleLabel');
+          const tipAmountTitle = document.getElementById('tipAmountTitle');
+          const totalBillTitle = document.getElementById('totalBillTitle');
+          const totalBillSubtext = document.getElementById('totalBillSubtext');
+          const perPersonTitle = document.getElementById('perPersonTitle');
+
           const billInput = document.getElementById('billInput');
           const customTipInput = document.getElementById('customTipInput');
           const peopleInput = document.getElementById('peopleInput');
@@ -585,17 +964,37 @@
           const themeIcon = document.getElementById('themeIcon');
           const themeLabel = document.getElementById('themeLabel');
 
+          // Apply static translations
+          appTitle.textContent = t.appTitle;
+          themeToggle.setAttribute('aria-label', t.toggleThemeAria);
+          inputsSection.setAttribute('aria-label', t.billDetailsAria);
+          resultsSection.setAttribute('aria-label', t.resultsAria);
+          billLabel.textContent = t.billLabel;
+          tipGroupLabel.textContent = t.tipGroupLabel;
+          customTipInput.placeholder = t.customTipPlaceholder;
+          customTipInput.setAttribute('aria-label', t.customTipAria);
+          peopleLabel.textContent = t.peopleLabel;
+          decreasePeopleBtn.setAttribute('aria-label', t.decreasePeopleAria);
+          increasePeopleBtn.setAttribute('aria-label', t.increasePeopleAria);
+          tipAmountTitle.textContent = t.tipAmountTitle;
+          totalBillTitle.textContent = t.totalBillTitle;
+          totalBillSubtext.textContent = t.totalBillSubtext;
+          perPersonTitle.textContent = t.perPersonTitle;
+          statusBanner.textContent = t.statusBanner;
+          resetBtn.textContent = t.resetBtn;
+
           let selectedPresetTip = 15; // null when custom input is active
 
-          const currencyFormatter = new Intl.NumberFormat('en-US', {
+          const currencyFormatter = new Intl.NumberFormat(userLocale, {
             style: 'currency',
             currency: 'USD',
+            currencyDisplay: 'narrowSymbol',
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
           });
 
           function formatCurrency(val) {
-            if (!Number.isFinite(val)) return '$0.00';
+            if (!Number.isFinite(val)) return currencyFormatter.format(0);
             return currencyFormatter.format(val);
           }
 
@@ -610,7 +1009,7 @@
             document.documentElement.setAttribute('data-theme', theme);
             const isDark = theme === 'dark';
             themeIcon.textContent = isDark ? '☀️' : '🌙';
-            themeLabel.textContent = isDark ? 'Light' : 'Dark';
+            themeLabel.textContent = isDark ? t.themeLight : t.themeDark;
           }
 
           applyTheme(getPreferredTheme());
@@ -629,11 +1028,11 @@
             const rawBill = billInput.value.trim();
             const billVal = Number(rawBill);
             if (rawBill === '' || Number.isNaN(billVal)) {
-              billError.textContent = 'Enter a bill amount';
+              billError.textContent = t.errBillEmpty;
               billInput.classList.add('is-invalid');
               isValid = false;
             } else if (billVal < 0) {
-              billError.textContent = 'Cannot be negative';
+              billError.textContent = t.errNegative;
               billInput.classList.add('is-invalid');
               isValid = false;
             } else {
@@ -648,11 +1047,11 @@
             if (selectedPresetTip === null) {
               const customVal = Number(rawCustomTip);
               if (rawCustomTip === '' || Number.isNaN(customVal)) {
-                tipError.textContent = 'Enter a tip % or pick a preset';
+                tipError.textContent = t.errTipEmpty;
                 customTipInput.classList.add('is-invalid');
                 isValid = false;
               } else if (customVal < 0) {
-                tipError.textContent = 'Cannot be negative';
+                tipError.textContent = t.errNegative;
                 customTipInput.classList.add('is-invalid');
                 isValid = false;
               } else {
@@ -669,15 +1068,15 @@
             const rawPeople = peopleInput.value.trim();
             const peopleVal = Number(rawPeople);
             if (rawPeople === '' || Number.isNaN(peopleVal)) {
-              peopleError.textContent = 'Enter number of people';
+              peopleError.textContent = t.errPeopleEmpty;
               peopleInput.classList.add('is-invalid');
               isValid = false;
             } else if (peopleVal < 1) {
-              peopleError.textContent = peopleVal < 0 ? 'Cannot be negative' : 'Must be at least 1';
+              peopleError.textContent = peopleVal < 0 ? t.errNegative : t.errPeopleMin;
               peopleInput.classList.add('is-invalid');
               isValid = false;
             } else if (!Number.isInteger(peopleVal)) {
-              peopleError.textContent = 'Must be a whole number';
+              peopleError.textContent = t.errPeopleInt;
               peopleInput.classList.add('is-invalid');
               isValid = false;
             } else {
@@ -705,9 +1104,9 @@
             totalAmountDisplay.textContent = formatCurrency(totalAmount);
             perPersonDisplay.textContent = formatCurrency(perPerson);
 
-            tipSubtext.textContent = `${tipPercent}% of bill`;
+            tipSubtext.textContent = t.tipSubtext(tipPercent);
             splitSubtext.textContent =
-              peopleVal === 1 ? 'For 1 person' : `Split between ${peopleVal} people`;
+              peopleVal === 1 ? t.splitOne : t.splitMany(peopleVal);
           }
 
           // Event Listeners
@@ -755,6 +1154,11 @@
               b.classList.toggle('active', b.getAttribute('data-tip') === '15');
             });
             validateAndCalculate();
+          });
+
+          // Listen for live system language changes
+          window.addEventListener('languagechange', () => {
+            window.location.reload();
           });
 
           validateAndCalculate();
